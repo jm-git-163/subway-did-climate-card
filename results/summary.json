@@ -1,0 +1,43 @@
+{
+  "versions": {
+    "pandas": "3.0.6",
+    "numpy": "2.5.3",
+    "statsmodels": "0.15.0"
+  },
+  "sample": {
+    "all_units": 391,
+    "balanced_units": 383,
+    "balanced_seoul": 271,
+    "balanced_busan": 112
+  },
+  "main_did": {
+    "coef": 0.0011508883821126012,
+    "se": 0.0047427768272158225,
+    "ci_low": -0.008144783385941557,
+    "ci_high": 0.01044656015016676,
+    "p": 0.8082677909454702,
+    "n_obs": 11107,
+    "n_units": 383,
+    "n_treated_units": 271,
+    "n_control_units": 112
+  },
+  "main_effect_percent": 0.11515509082868228,
+  "main_effect_percent_ci": [
+    -0.8111704505433338,
+    1.050131596351559
+  ],
+  "pretrend_test": {
+    "n_pre_coefs": 17,
+    "wald_F": 47.419396440847265,
+    "p_value": 4.485357563929535e-83
+  },
+  "placebo": {
+    "n_placebos": 9,
+    "share_abs_ge_actual": 1.0,
+    "placebo_coef_min": -0.007758813970684092,
+    "placebo_coef_max": 0.03297998036291048
+  },
+  "jumper_units_dropped": [
+    "seoul_2_209"
+  ]
+}
