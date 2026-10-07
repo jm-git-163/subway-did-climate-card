@@ -6,8 +6,22 @@
 ## 상태 (2026-10-07)
 - [x] 분석계획서 `plan.yaml` 먼저 작성 (데이터 값을 보기 전)
 - [x] 데이터 수집과 정리 (`src/prepare.py`, 품질 점검 `data/processed/qc_report.txt`)
-- [ ] 이중차분 / 이벤트 스터디 / 가짜 도입일 검정
-- [ ] 결과 리포트
+- [x] 이중차분 / 이벤트 스터디 / 가짜 도입일 검정 (`src/estimate.py`, `results/`)
+- [x] 결과 리포트 ([REPORT.md](REPORT.md))
+
+## 결과 요약 (자세한 내용은 REPORT.md)
+- 주 추정: 서울 x 도입 후 = +0.12% (95% 신뢰구간 -0.81% ~ +1.05%), 사실상 0.
+- 그러나 사전 추세 검정에서 서울과 부산의 도입 전 흐름이 달라(p ≈ 4.5e-83) 계획서의 규칙대로 **인과 해석은 보류**합니다.
+- 가짜 도입일 추정치(최대 +3.3%)가 실제 추정치보다 큽니다. 이 설계는 3~5% 이내 효과를 계절 차이와 구분하지 못합니다.
+- 다음 단계: 비교 도시를 늘려(합성통제) 평행추세를 개선.
+
+## 실행 방법
+```
+pip install -r requirements.txt
+python src/prepare.py --raw data/raw --out data/processed
+python src/estimate.py --panel data/processed/station_month.csv --out results
+python src/exploratory.py --panel data/processed/station_month.csv --out results   # 사전등록 밖 탐색
+```
 
 ## 왜 계획서를 먼저 올렸나
 결과를 본 뒤 분석 방법을 바꾸면 원하는 결론에 맞추게 될 수 있습니다. 그래서 가설, 사용 데이터, 모델, 판단 기준을 먼저 `plan.yaml`에 적어 커밋하고, 이후 변경은 git 기록과 아래 "계획 변경 기록"에 남깁니다.
