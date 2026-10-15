@@ -1,0 +1,113 @@
+# 분석 계획서 (멘토 스키마 형식으로 옮긴 것)
+# 원본 계획: plan_v2.yaml (커밋 87f5222, 2026-10-15, 자료를 열기 전에 올림).
+# 이 파일은 그 계획과 같은 내용을 멘토 스키마(core/schema/plan.py) 칸으로 옮긴 것이다.
+# 분석 규칙은 바꾸지 않았다. 칸 이름만 맞췄다.
+# 제한: 추정은 이 저장소의 src/estimate_cities.py 가 하며, 멘토의 core/ 엔진은 쓰지 않았다.
+
+case_id: jm-git-163-climate-card
+title: "서울 기후동행카드 시범사업 전후 지하철 승차 흐름 비교 (서울 vs 부산·대구·광주·대전)"
+question: >-
+  서울 기후동행카드 시범사업(2024-01-27) 전후로, 서울교통공사 1~8호선의 평일 승차 인원 흐름은
+  같은 기간 부산·대구·광주·대전 도시철도와 비교해 어떻게 달랐는가?
+  그리고 공개 자료만으로 그 차이를 정책 효과로 판단할 수 있는가?
+synthetic_data: false
+
+unit: {name: 도시철도 운영기관(도시), id_col: city}
+time: {col: month_idx, freq: month, start: 0, end: 21}
+
+treatment:
+  definition: >-
+    서울교통공사 1~8호선(서울). 기후동행카드 판매 2024-01-23, 시범사업 이용 시작 2024-01-27,
+    본사업 2024-07-01. 첫 처치 월은 한 달 내내 쓸 수 있었던 2024-02(month_idx 19)로 둔다.
+    2024-01(18)은 모든 도시에서 제외한다.
+  group_col: treated
+  treat_time: 19
+
+control:
+  definition: >-
+    부산교통공사, 대구교통공사, 광주교통공사, 대전교통공사 도시철도.
+    분석 기간(2022-07~2024-04)에 기후동행카드를 쓸 수 없는 지역이다.
+  rationale: >-
+    같은 시기 전국 공통 요인(계절, 경기, 코로나 이후 회복)을 함께 받는다. 다만 도시마다 같은 시기
+    요금 변화가 달라 완전한 대조군은 아니다. 알려진 요금 변화: 서울 2023-10-07(1,250→1,400원),
+    부산 2023-10-06(1,300→1,450원), 부산 동백패스 2023-08-01, 대전 2024-01-01(1,250→1,550원),
+    대구 2024-01-13(1,250→1,500원), 광주 변화 없음. 대전·대구를 뺀 비교(부산·광주)를 따로 본다.
+
+outcomes:
+  - name: 평일 일평균 승차 인원(로그)
+    col: log_weekday
+    definition: >-
+      log(해당 월 평일(월~금) 하루 평균 승차 인원의 도시 합계). 승차만 센다.
+      분석 기간 내내 자료가 있고 승차가 0보다 큰 역만 더한다(도시별 균형 표본).
+    unit: "로그(명/일)"
+    primary: true
+    expected_direction: unknown
+  - name: 주말·공휴일 일평균 승차 인원(로그)
+    col: log_weekend
+    definition: "log(해당 월 토·일 하루 평균 승차 인원의 도시 합계). 같은 역 표본."
+    unit: "로그(명/일)"
+    primary: false
+    expected_direction: unknown
+
+estimator:
+  method: event_study
+  cluster_col: city
+  ref_period: -2
+  window: [-8, 2]
+  alpha: 0.05
+
+assumptions:
+  - name: 평행추세
+    description: "기후동행카드가 없었다면 서울과 비교 도시의 승차 추세는 같았을 것"
+    check: pretrend_test
+  - name: 같은 시기 다른 요금 변화 없음
+    description: >-
+      처치 전후에 서울 또는 비교 도시에만 있었던 요금 변화가 없을 것. 알려진 위반: 대전(2024-01-01)·
+      대구(2024-01-13) 요금 인상, 서울·부산 2023-10 인상, 부산 동백패스(2023-08). discussion.md에 적는다.
+    check: manual
+  - name: 미리 반응하지 않음
+    description: "2023-09 발표 뒤 시행 전부터 이용이 바뀌었는지 가짜 시작월로 확인"
+    check: placebo_time
+
+refutations:
+  - kind: placebo_time
+    params: {shift: 6}
+  - kind: drop_unit
+    params: {drop: [daegu, daejeon], note: "요금 인상이 처치 시점과 겹치는 비교 도시를 뺀 재추정"}
+
+abstention:
+  - {when: pretrend_rejected, verdict: not_identified}
+  - {when: placebo_significant, verdict: conditional}
+  - {when: ci_crosses_zero, verdict: conditional, note: "효과 없음이 아니라 판별 불가로 보고"}
+  - {when: few_treated_clusters, verdict: conditional, note: "처치 도시가 서울 1곳뿐"}
+  - {when: few_clusters, verdict: conditional, note: "도시 5곳뿐. 군집-강건 표준오차를 믿기 어려움"}
+  - {when: short_pre_period, verdict: conditional}
+
+thresholds: {pretrend_alpha: 0.10, min_clusters: 20, min_pre_periods: 3}
+
+data_sources:
+  - name: "서울교통공사_1_8호선 역별 일별 시간대별 승객유형별 승하차인원"
+    provider: "서울교통공사 (공공데이터포털 15099330)"
+    url: "https://www.data.go.kr/data/15099330/fileData.do"
+    license: other
+    notes: "이용허락범위 제한 없음. 반기 파일."
+  - name: "부산교통공사_시간대별 승하차인원"
+    provider: "부산교통공사 (공공데이터포털 3057229)"
+    url: "https://www.data.go.kr/data/3057229/fileData.do"
+    license: other
+    notes: "이용허락범위 제한 없음. 연도별 파일."
+  - name: "대구교통공사_역별일별시간별승하차인원현황"
+    provider: "대구교통공사 (공공데이터포털 15002503)"
+    url: "https://www.data.go.kr/data/15002503/fileData.do"
+    license: other
+    notes: "이용허락범위 제한 없음. 과거 파일 20221231·20231231·20240430."
+  - name: "광주교통공사_역일시간대별 승하차량"
+    provider: "광주교통공사 (공공데이터포털 15060048)"
+    url: "https://www.data.go.kr/data/15060048/fileData.do"
+    license: other
+    notes: "이용허락범위 제한 없음. 과거 파일 20221231·20231231·20240430."
+  - name: "대전교통공사_시간대별 승하차인원"
+    provider: "대전교통공사 (공공데이터포털 15060591)"
+    url: "https://www.data.go.kr/data/15060591/fileData.do"
+    license: other
+    notes: "이용허락범위 제한 없음. 과거 파일 20221231·20231231·20241231."
