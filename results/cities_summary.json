@@ -1,0 +1,90 @@
+{
+  "treated": "seoul",
+  "controls": [
+    "busan",
+    "daegu",
+    "daejeon",
+    "gwangju"
+  ],
+  "pre_months": 18,
+  "post_months": 3,
+  "main": {
+    "tau_log": 0.029761614530757097,
+    "tau_pct": 3.0208917842725835,
+    "tau_ols_check": 0.029761614530759328
+  },
+  "placebo_space": {
+    "abs_tau_rank": 3,
+    "ratio_rank": 3,
+    "n": 5,
+    "min_possible_p": 0.2
+  },
+  "pre_trend": {
+    "slope_per_month": 0.00013601525097932388,
+    "ci95": [
+      -0.0013171314303276093,
+      0.001589161932286257
+    ],
+    "includes_zero": true,
+    "extrapolated_change": 0.0014281601352829007
+  },
+  "placebo_time": {
+    "fake_start": "2023-08",
+    "tau": -0.005546988098718675,
+    "abs_ratio_to_main": 0.18638061765722247
+  },
+  "sensitivity": [
+    {
+      "spec": "주 추정 (대조 4곳, 평일)",
+      "tau_log": 0.029761614530757097,
+      "tau_pct": 3.0208917842725835,
+      "ci95_log": NaN
+    },
+    {
+      "spec": "대조 부산·광주만",
+      "tau_log": 0.013647700590627476,
+      "tau_pct": 1.374125557532424,
+      "ci95_log": NaN
+    },
+    {
+      "spec": "사전 기준 2023-10~12만",
+      "tau_log": 0.041152283644994014,
+      "tau_pct": 4.201077466270586,
+      "ci95_log": NaN
+    },
+    {
+      "spec": "사전 기준 2023-10~12, 대조 부산·광주",
+      "tau_log": 0.03819401314948356,
+      "tau_pct": 3.8932779947214113,
+      "ci95_log": NaN
+    },
+    {
+      "spec": "주말 승차 (대조 4곳)",
+      "tau_log": -0.01830752019388271,
+      "tau_pct": -1.8140955556723126,
+      "ci95_log": NaN
+    },
+    {
+      "spec": "역 단위 (참고, 역 군집 SE)",
+      "tau_log": 0.037926796703485026,
+      "tau_pct": 3.8655197111126416,
+      "ci95_log": [
+        0.02919331184981129,
+        0.04666028155715876
+      ]
+    }
+  ],
+  "verdict": {
+    "label": "조건부",
+    "conditions": {
+      "pre_trend_ci_includes_zero": true,
+      "placebo_time_less_than_half": true,
+      "seoul_rank1_both": false,
+      "same_sign_busan_gwangju": true
+    }
+  },
+  "summary_sentence": "판정: 조건부. 서울과 비교 도시 4곳 평균의 평일 승차 격차는 사후 3개월에 사전 평균보다 +3.0% 달랐다. 이 값은 같은 계산을 대조 도시에 해 본 5개 값 중 크기 기준 3번째였다.",
+  "wording_check": {
+    "banned_found": []
+  }
+}
